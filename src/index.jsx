@@ -1,11 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App.jsx';
+import Main from './Main';
 import './index.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <div>
+      <h1>VERY NIFTY STREAMER SONG LIST HISTORY BROWSING TOOL</h1>
+      <h4>coded (poorly) by pirate_patch</h4>
+      <Main/>
+    </div>,
   </React.StrictMode>,
   document.getElementById('root'),
 );
