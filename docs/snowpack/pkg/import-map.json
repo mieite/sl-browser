@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@table-library/react-table-library": "./@table-library/react-table-library.js",
+    "@table-library/react-table-library/sort": "./@table-library/react-table-library/sort.js",
+    "dateformat": "./dateformat.js",
+    "fetch-intercept": "./fetch-intercept.js",
+    "react": "./react.js",
+    "react-dom": "./react-dom.js"
+  }
+}
