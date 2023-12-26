@@ -25,3 +25,15 @@ code {
     "Courier New",
     monospace;
 }
+.segment {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+.paragraph {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+div.main {
+  padding-left: 1em;
+  padding-right: 1em;
+}

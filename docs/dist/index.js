@@ -401,6 +401,7 @@ var React = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.assign(/* @__PU
 // docs/snowpack/pkg/react.js
 var Component = react.Component;
 var useEffect = react.useEffect;
+var useRef = react.useRef;
 var useState = react.useState;
 
 // docs/snowpack/pkg/react-dom.js
@@ -9269,36 +9270,25 @@ var formatTimezone = function formatTimezone2(date) {
 var dateformat_default = dateFormat;
 
 // docs/dist/Results/RequestsByUserTotals/index.js
-var RequestsByUserTotals = class extends Component {
-  constructor(props) {
-    super(props);
+var RequestsByUserTotals = ({
+  data
+}) => {
+  console.log("rendering RequestsByUserTotals");
+  if (!data) {
+    return /* @__PURE__ */ react.createElement(react.Fragment, null);
   }
-  shouldComponentUpdate(nextProps, nextState, nextContext) {
-    return JSON.stringify(nextProps) !== JSON.stringify(this.props);
-  }
-  render() {
-    console.log("rendering RequestsByUserTotals");
-    if (!this.props.data) {
-      return /* @__PURE__ */ react.createElement(react.Fragment, null);
-    }
-    return /* @__PURE__ */ react.createElement(RequestsByUserTotalsTable, {
-      data: this.props.data
-    });
-  }
-};
-var RequestsByUserTotalsTable = (props) => {
   console.log("creating RequestsByUserTotalsTable");
   const sortOptions = {
     sortFns: {
-      REQUESTER: (array) => array.sort((a3, b3) => a3.requester.localeCompare(b3.name)),
+      REQUESTER: (array) => array.sort((a3, b3) => a3.requester.localeCompare(b3.requester)),
       FIRST_DATE: (array) => array.sort((a3, b3) => new Date(a3.firstDate).getTime() - new Date(b3.firstDate).getTime()),
       LAST_DATE: (array) => array.sort((a3, b3) => new Date(a3.lastDate).getTime() - new Date(b3.lastDate).getTime()),
       TOTAL_PLAYED: (array) => array.sort((a3, b3) => a3.total - b3.total)
     }
   };
-  const sort = D4(props.data, {state: {sortKey: "TOTAL_PLAYED", reverse: true}}, sortOptions);
+  const sort = D4(data, {state: {sortKey: "TOTAL_PLAYED", reverse: true}}, sortOptions);
   return /* @__PURE__ */ react.createElement(h2, {
-    data: props.data,
+    data,
     sort
   }, (tableList) => /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(i$12, null, /* @__PURE__ */ react.createElement(Q2, null, /* @__PURE__ */ react.createElement(O3, {
     sortKey: "REQUESTER"
@@ -9317,53 +9307,143 @@ var RequestsByUserTotals_default = RequestsByUserTotals;
 
 // docs/dist/Results/RequestsByUser/index.js
 var RequestsByUser = ({
-  data
+  data,
+  showUser
 }) => {
   const sortOptions = {
     sortFns: {
       SONG_NAME: (array) => array.sort((a3, b3) => a3.song.localeCompare(b3.song)),
+      REQUESTER: (array) => array.sort((a3, b3) => a3.requester.localeCompare(b3.requester)),
       PLAY_DATE: (array) => array.sort((a3, b3) => new Date(a3.firstDate).getTime() - new Date(b3.firstDate).getTime())
     }
   };
   const sort = D4(data, {state: {sortKey: "PLAY_DATE"}}, sortOptions);
-  return /* @__PURE__ */ react.createElement(h2, {
+  console.log("rendering RequestsByUser");
+  return /* @__PURE__ */ react.createElement("div", {
+    className: "paragraph"
+  }, /* @__PURE__ */ react.createElement(h2, {
     data,
     sort
-  }, (tableList) => /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(i$12, null, /* @__PURE__ */ react.createElement(Q2, null, /* @__PURE__ */ react.createElement(O3, {
+  }, (tableList) => /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(i$12, null, /* @__PURE__ */ react.createElement(Q2, null, showUser && /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(O3, {
+    sortKey: "REQUESTER"
+  }, "Name")), /* @__PURE__ */ react.createElement(O3, {
     sortKey: "SONG_NAME"
   }, "Song Name"), /* @__PURE__ */ react.createElement(v$1, null, "Song URI"), /* @__PURE__ */ react.createElement(O3, {
     sortKey: "PLAY_DATE"
   }, "Played"))), /* @__PURE__ */ react.createElement(o$12, null, tableList.map((item) => /* @__PURE__ */ react.createElement(D3, {
     key: item.id,
     item
-  }, /* @__PURE__ */ react.createElement(A2, null, item.song), /* @__PURE__ */ react.createElement(A2, null, item.uri), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.playedAt), "yyyy-mm-dd HH:MM")))))));
+  }, showUser && /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(A2, null, item.requester)), /* @__PURE__ */ react.createElement(A2, null, item.song), /* @__PURE__ */ react.createElement(A2, null, item.uri), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.playedAt), "yyyy-mm-dd HH:MM"))))))));
 };
 var RequestsByUser_default = RequestsByUser;
+
+// docs/dist/utils.js
+var parseUri = (req) => {
+  let uri;
+  if (req.note && req.note.toLowerCase().startsWith("http")) {
+    uri = req.note;
+  } else if (req.nonlistSong && req.nonlistSong.toLowerCase().startsWith("http")) {
+    uri = req.nonlistSong;
+  }
+  if (uri && uri.includes("youtube") && uri.includes("&")) {
+    uri = uri.substring(0, uri.indexOf("&"));
+  } else if (uri && uri.includes("spotify") && uri.includes("?")) {
+    uri = uri.substring(0, uri.indexOf("?"));
+  }
+  return uri;
+};
+var requestToDefaultTableRow = (req) => {
+  const info = req.requests[0];
+  const name = info && info.name || "anonymous";
+  const song = parseSong(req);
+  const uri = parseUri(req);
+  return {
+    id: req.id,
+    uri,
+    createdAt: req.createdAt,
+    playedAt: req.playedAt,
+    song,
+    requester: name
+  };
+};
+var parseSong = (req) => {
+  let song;
+  if (req.song) {
+    song = `${req.song.artist} - ${req.song.title}`;
+  } else {
+    if (req.nonlistSong) {
+      song = req.nonlistSong;
+    } else {
+      song = req.note;
+    }
+  }
+  return song;
+};
+
+// docs/dist/Results/RequestsBySong/AggregateBySong/index.js
+var AggregateBySong = ({
+  data
+}) => {
+  const sortOptions = {
+    sortFns: {
+      SONG_NAME: (array) => array.sort((a3, b3) => a3.actualSong.localeCompare(b3.actualSong)),
+      FIRST_DATE: (array) => array.sort((a3, b3) => new Date(a3.firstDate).getTime() - new Date(b3.firstDate).getTime()),
+      LAST_DATE: (array) => array.sort((a3, b3) => new Date(a3.lastDate).getTime() - new Date(b3.lastDate).getTime()),
+      TOTAL_PLAYED: (array) => array.sort((a3, b3) => a3.total - b3.total)
+    }
+  };
+  const sort = D4(data, {state: {sortKey: "TOTAL_PLAYED", reverse: true}}, sortOptions);
+  return /* @__PURE__ */ react.createElement("div", {
+    className: "paragraph"
+  }, /* @__PURE__ */ react.createElement(h2, {
+    data,
+    sort
+  }, (tableList) => /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(i$12, null, /* @__PURE__ */ react.createElement(Q2, null, /* @__PURE__ */ react.createElement(O3, {
+    sortKey: "SONG_NAME"
+  }, "Name"), /* @__PURE__ */ react.createElement(O3, {
+    sortKey: "FIRST_DATE"
+  }, "First"), /* @__PURE__ */ react.createElement(O3, {
+    sortKey: "LAST_DATE"
+  }, "Last"), /* @__PURE__ */ react.createElement(O3, {
+    sortKey: "TOTAL_PLAYED"
+  }, "Total played"))), /* @__PURE__ */ react.createElement(o$12, null, tableList.map((item) => /* @__PURE__ */ react.createElement(D3, {
+    key: item.id,
+    item
+  }, /* @__PURE__ */ react.createElement(A2, null, item.actualSong), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.firstDate), "yyyy-mm-dd HH:MM")), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.lastDate), "yyyy-mm-dd HH:MM")), /* @__PURE__ */ react.createElement(A2, null, item.total)))))));
+};
+var AggregateBySong_default = AggregateBySong;
 
 // docs/dist/Results/RequestsBySong/index.js
 var RequestsBySong = ({
   data,
-  songName
+  songName,
+  aggregate
 }) => {
   const [crunched, setCrunched] = useState(null);
   useEffect(() => {
-    const crunched2 = data.reduce((map, req) => {
+    console.log(`effect called with songName ${songName}`);
+    const crunched2 = aggregate ? crunchAggregated() : crunch();
+    setCrunched({nodes: Array.from(crunched2.values())});
+  }, [songName, aggregate]);
+  const crunch = () => {
+    return data.map((req) => {
+      const parsed = requestToDefaultTableRow(req);
+      if (parsed.song.toLowerCase().includes(songName)) {
+        return parsed;
+      }
+      return null;
+    }).filter((x4) => x4);
+  };
+  const crunchAggregated = () => {
+    console.log(`crunching aggregated with songName ${songName}`);
+    return data.reduce((map, req) => {
       if (!req.song && !req.nonlistSong) {
         console.log(`req song is null! ${JSON.stringify(req)}`);
         return map;
       }
-      let song;
-      if (req.song) {
-        song = `${req.song.artist} - ${req.song.title}`;
-      } else {
-        if (req.nonlistSong) {
-          song = req.nonlistSong;
-        } else {
-          song = req.note;
-        }
-      }
+      const song = parseSong(req);
       let lowercaseSong = song.toLowerCase();
-      if (!lowercaseSong.includes(songName.toLowerCase())) {
+      if (songName && !lowercaseSong.includes(songName.toLowerCase())) {
         return map;
       }
       if (!map.has(lowercaseSong)) {
@@ -9380,161 +9460,137 @@ var RequestsBySong = ({
       }
       return map;
     }, new Map());
-    setCrunched({nodes: Array.from(crunched2.values())});
-  }, [songName]);
-  const sortOptions = {
-    sortFns: {
-      SONG_NAME: (array) => array.sort((a3, b3) => a3.actualSong.localeCompare(b3.actualSong)),
-      FIRST_DATE: (array) => array.sort((a3, b3) => new Date(a3.firstDate).getTime() - new Date(b3.firstDate).getTime()),
-      LAST_DATE: (array) => array.sort((a3, b3) => new Date(a3.lastDate).getTime() - new Date(b3.lastDate).getTime()),
-      TOTAL_PLAYED: (array) => array.sort((a3, b3) => a3.total - b3.total)
-    }
   };
-  const sort = D4(data, {state: {sortKey: "TOTAL_PLAYED", reverse: true}}, sortOptions);
   if (!data) {
-    return /* @__PURE__ */ react.createElement(react.Fragment, null, "missing data");
-  } else if (!crunched) {
-    return /* @__PURE__ */ react.createElement(react.Fragment, null, "crunching data");
+    return /* @__PURE__ */ react.createElement("div", {
+      className: "paragraph"
+    }, "missing data");
   }
-  return /* @__PURE__ */ react.createElement(h2, {
-    data: crunched,
-    sort
-  }, (tableList) => /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement(i$12, null, /* @__PURE__ */ react.createElement(Q2, null, /* @__PURE__ */ react.createElement(O3, {
-    sortKey: "SONG_NAME"
-  }, "Name"), /* @__PURE__ */ react.createElement(O3, {
-    sortKey: "FIRST_DATE"
-  }, "First"), /* @__PURE__ */ react.createElement(O3, {
-    sortKey: "LAST_DATE"
-  }, "Last"), /* @__PURE__ */ react.createElement(O3, {
-    sortKey: "TOTAL_PLAYED"
-  }, "Total played"))), /* @__PURE__ */ react.createElement(o$12, null, tableList.map((item) => /* @__PURE__ */ react.createElement(D3, {
-    key: item.id,
-    item
-  }, /* @__PURE__ */ react.createElement(A2, null, item.actualSong), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.firstDate), "yyyy-mm-dd HH:MM")), /* @__PURE__ */ react.createElement(A2, null, dateformat_default(new Date(item.lastDate), "yyyy-mm-dd HH:MM")), /* @__PURE__ */ react.createElement(A2, null, item.total))))));
+  if (!crunched) {
+    return /* @__PURE__ */ react.createElement("div", {
+      className: "paragraph"
+    }, "crunching");
+  }
+  if (aggregate) {
+    return /* @__PURE__ */ react.createElement(AggregateBySong_default, {
+      data: crunched
+    });
+  } else {
+    return /* @__PURE__ */ react.createElement(RequestsByUser_default, {
+      data: crunched,
+      showUser: true
+    });
+  }
 };
 var RequestsBySong_default = RequestsBySong;
 
 // docs/dist/Results/index.js
-var Results = class extends Component {
-  constructor(props) {
-    super(props);
-    __publicField(this, "crunchData", () => {
-      console.log("crunch");
-      const reqsByUser = new Map();
-      const data = this.props.data;
-      if (!data) {
-        return;
-      }
-      data.forEach((req) => {
-        const info = req.requests[0];
-        const name = info && info.name || "anonymous";
-        const list = reqsByUser.has(name.toLowerCase()) ? reqsByUser.get(name.toLowerCase()) : [];
-        let song;
-        if (req.song) {
-          song = `${req.song.artist} - ${req.song.title}`;
-        } else {
-          if (req.nonlistSong) {
-            song = req.nonlistSong;
-          } else {
-            song = req.note;
-          }
-        }
-        let uri;
-        if (req.note && req.note.toLowerCase().startsWith("http")) {
-          uri = req.note;
-        } else if (req.nonlistSong && req.nonlistSong.toLowerCase().startsWith("http")) {
-          uri = req.nonlistSong;
-        }
-        if (uri && uri.includes("youtube") && uri.includes("&")) {
-          uri = uri.substring(0, uri.indexOf("&"));
-        } else if (uri && uri.includes("spotify") && uri.includes("?")) {
-          uri = uri.substring(0, uri.indexOf("?"));
-        }
-        list.push({
-          id: req.id,
-          uri,
-          createdAt: req.createdAt,
-          playedAt: req.playedAt,
-          song,
-          requester: name
-        });
-        reqsByUser.set(name.toLowerCase(), list);
-      });
-      const byUserTotalsTableRows = Array.from(reqsByUser, ([key, userReqs]) => {
-        return {
-          id: userReqs[0].id,
-          requester: userReqs[0].requester,
-          firstDate: userReqs[userReqs.length - 1].playedAt,
-          lastDate: userReqs[0].playedAt,
-          total: userReqs.length
-        };
-      });
-      console.log(data);
-      this.setState({crunched: reqsByUser, byUserTotalsTableRows});
+var Results = ({
+  data
+}) => {
+  const [crunched, setCrunched] = useState(null);
+  const [byUserTotalsTableRows, setByUserTotalsTableRows] = useState([]);
+  const requesterName = useRef(null);
+  const [actualRequesterName, setActualRequesterName] = useState(null);
+  const [showFilterByUser, setShowFilterByUser] = useState(false);
+  const [showFilterBySongName, setShowFilterBySongName] = useState(false);
+  const songName = useRef(null);
+  const [actualSongName, setActualSongName] = useState(null);
+  const [aggregateSongResults, setAggregateSongResults] = useState(false);
+  useEffect(() => {
+    crunchData();
+  }, []);
+  const crunchData = () => {
+    console.log("crunch");
+    const reqsByUser = new Map();
+    if (!data) {
+      return;
+    }
+    data.forEach((req) => {
+      const parsedReq = requestToDefaultTableRow(req);
+      let name = parsedReq.requester;
+      const list = reqsByUser.has(name.toLowerCase()) ? reqsByUser.get(name.toLowerCase()) : [];
+      list.push(parsedReq);
+      reqsByUser.set(name.toLowerCase(), list);
     });
-    __publicField(this, "updateRequesterName", (e4) => this.setState({requester: e4.target.value}));
-    __publicField(this, "updateSongName", (e4) => this.setState({songName: e4.target.value}));
-    __publicField(this, "filterByUser", () => this.setState({showFilterByUser: true}));
-    __publicField(this, "filterBySongName", () => this.setState({actualSongName: this.state.songName, showFilterBySongName: true}));
-    __publicField(this, "filterByUserTable", () => {
-      if (!this.props.data || !this.state?.crunched || !this.state?.requester || !this.state?.showFilterByUser) {
-        return /* @__PURE__ */ react.createElement(react.Fragment, null);
-      }
-      const byUser = this.state.crunched.get(this.state.requester.toLowerCase());
-      if (!byUser) {
-        return /* @__PURE__ */ react.createElement(react.Fragment, null);
-      }
-      return /* @__PURE__ */ react.createElement(RequestsByUser_default, {
-        data: {nodes: byUser}
-      });
+    const byUserTotalsTableRows2 = Array.from(reqsByUser, ([key, userReqs]) => {
+      return {
+        id: userReqs[0].id,
+        requester: userReqs[0].requester,
+        firstDate: userReqs[userReqs.length - 1].playedAt,
+        lastDate: userReqs[0].playedAt,
+        total: userReqs.length
+      };
     });
-    __publicField(this, "filterBySongNameTable", () => {
-      if (!this.props.data || !this.state?.crunched || !this.state?.actualSongName || !this.state?.showFilterBySongName) {
-        return /* @__PURE__ */ react.createElement(react.Fragment, null);
-      }
-      return /* @__PURE__ */ react.createElement(RequestsBySong_default, {
-        data: this.props.data,
-        songName: this.state.actualSongName
-      });
-    });
-  }
-  componentDidMount() {
-    this.crunchData();
-  }
-  requestsByUserTotals() {
-    if (!this.props.data || !this.state.byUserTotalsTableRows) {
+    setCrunched(reqsByUser);
+    setByUserTotalsTableRows(byUserTotalsTableRows2);
+  };
+  const requestsByUserTotals = () => {
+    if (!data || !byUserTotalsTableRows) {
       return /* @__PURE__ */ react.createElement(react.Fragment, null, "fetching & crunching data");
     }
     return /* @__PURE__ */ react.createElement(RequestsByUserTotals_default, {
-      data: {nodes: this.state.byUserTotalsTableRows}
+      data: {nodes: byUserTotalsTableRows}
     });
-  }
-  render() {
-    if (!this.state?.crunched) {
-      return /* @__PURE__ */ react.createElement(react.Fragment, null, "Crunching data...");
+  };
+  const filterByUserTable = () => {
+    if (!data || !crunched || !requesterName || !showFilterByUser) {
+      return /* @__PURE__ */ react.createElement(react.Fragment, null);
     }
-    return /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement("div", null, " Total: ", this.state.crunched.size, " requesters"), /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("h5", null, "User leaderboard")), /* @__PURE__ */ react.createElement("div", null, this.requestsByUserTotals()), /* @__PURE__ */ react.createElement("div", null, " "), /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("p", null, /* @__PURE__ */ react.createElement("input", {
-      type: "text",
-      placeholder: "Requests by user",
-      onChange: (e4) => {
-        this.updateRequesterName(e4);
-      }
-    }), /* @__PURE__ */ react.createElement("button", {
-      onClick: (e4) => {
-        this.filterByUser();
-      }
-    }, "search"), this.filterByUserTable()), /* @__PURE__ */ react.createElement("p", null, /* @__PURE__ */ react.createElement("input", {
-      type: "text",
-      placeholder: "Requests by song name",
-      onChange: (e4) => {
-        this.updateSongName(e4);
-      }
-    }), /* @__PURE__ */ react.createElement("button", {
-      onClick: (e4) => {
-        this.filterBySongName();
-      }
-    }, "search by song name"), this.filterBySongNameTable())));
+    const byUser = crunched.get(actualRequesterName.toLowerCase());
+    if (!byUser) {
+      return /* @__PURE__ */ react.createElement(react.Fragment, null);
+    }
+    console.log(`getting to do byUser`);
+    return /* @__PURE__ */ react.createElement(RequestsByUser_default, {
+      data: {nodes: byUser}
+    });
+  };
+  const filterBySongNameTable = () => {
+    if (!data || !crunched || !aggregateSongResults && !actualSongName || !showFilterBySongName) {
+      return /* @__PURE__ */ react.createElement(react.Fragment, null);
+    }
+    return /* @__PURE__ */ react.createElement(RequestsBySong_default, {
+      data,
+      songName: actualSongName,
+      aggregate: aggregateSongResults
+    });
+  };
+  if (!crunched) {
+    return /* @__PURE__ */ react.createElement(react.Fragment, null, "Crunching data...");
   }
+  return /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement("div", null, " Total: ", crunched.size, " requesters"), /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("h5", null, "User leaderboard")), /* @__PURE__ */ react.createElement("div", null, requestsByUserTotals()), /* @__PURE__ */ react.createElement("div", null, " "), /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("div", {
+    className: "segment"
+  }, /* @__PURE__ */ react.createElement("input", {
+    type: "text",
+    placeholder: "Requests by user",
+    onChange: (e4) => {
+      requesterName.current = e4.target.value;
+    }
+  }), /* @__PURE__ */ react.createElement("button", {
+    onClick: () => {
+      setShowFilterByUser(true);
+      setActualRequesterName(requesterName.current);
+    }
+  }, "search"), filterByUserTable()), /* @__PURE__ */ react.createElement("div", {
+    className: "segment"
+  }, /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("input", {
+    type: "text",
+    placeholder: "Requests by song name",
+    onChange: (e4) => {
+      songName.current = e4.target.value;
+    }
+  }), /* @__PURE__ */ react.createElement("input", {
+    type: "checkbox",
+    onInput: (e4) => {
+      setAggregateSongResults(e4.target.checked);
+    }
+  }), " aggregate results"), /* @__PURE__ */ react.createElement("button", {
+    onClick: (e4) => {
+      setShowFilterBySongName(true);
+      setActualSongName(songName.current);
+    }
+  }, "search by song name"), filterBySongNameTable())));
 };
 var Results_default = Results;
 
@@ -9741,7 +9797,7 @@ var Main = class extends Component {
     if (!this.state?.initialized) {
       return /* @__PURE__ */ react.createElement(react.Fragment, null);
     }
-    return /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement("div", {
+    return /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("div", {
       id: "search"
     }, /* @__PURE__ */ react.createElement("input", {
       type: "text",
@@ -9764,7 +9820,9 @@ var Main_default = Main;
 
 // docs/dist/index.js
 import.meta.env = env_exports;
-react_dom_default.render(/* @__PURE__ */ react.createElement(react.StrictMode, null, /* @__PURE__ */ react.createElement("div", null, /* @__PURE__ */ react.createElement("h1", null, "VERY NIFTY STREAMER SONG LIST HISTORY BROWSING TOOL"), /* @__PURE__ */ react.createElement("h4", null, "coded (poorly) by pirate_patch"), /* @__PURE__ */ react.createElement("h5", null, "version 0.01: search by song name included"), /* @__PURE__ */ react.createElement(Main_default, null))), document.getElementById("root"));
+react_dom_default.render(/* @__PURE__ */ react.createElement(react.StrictMode, null, /* @__PURE__ */ react.createElement("div", {
+  className: "main"
+}, /* @__PURE__ */ react.createElement("h1", null, "VERY NIFTY STREAMER SONG LIST HISTORY BROWSING TOOL"), /* @__PURE__ */ react.createElement("h4", null, "coded (poorly) by pirate_patch"), /* @__PURE__ */ react.createElement("h5", null, "version 0.01: search by song name included"), /* @__PURE__ */ react.createElement(Main_default, null))), document.getElementById("root"));
 if (void 0) {
   (void 0).accept();
 }
