@@ -15,7 +15,7 @@ const RequestsByUserTotals = ({
   
   const sortOptions = {
     sortFns: {
-      REQUESTER: (array) => array.sort((a, b) => a.requester.localeCompare(b.name)),
+      REQUESTER: (array) => array.sort((a, b) => a.requester.localeCompare(b.requester)),
       FIRST_DATE: (array) => array.sort((a, b) => new Date(a.firstDate).getTime() - new Date(b.firstDate).getTime()),
       LAST_DATE: (array) => array.sort((a, b) => new Date(a.lastDate).getTime() - new Date(b.lastDate).getTime()),
       TOTAL_PLAYED : (array) => array.sort((a, b) => a.total - b.total)

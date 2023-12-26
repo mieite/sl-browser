@@ -5,11 +5,13 @@ import dateFormat from "dateformat";
 import '../../index.css';
 
 const RequestsByUser = ({
-  data
+  data,
+  showUser
 }) => {
   const sortOptions = {
     sortFns: {
       SONG_NAME: (array) => array.sort((a, b) => a.song.localeCompare(b.song)),
+      REQUESTER: (array) => array.sort((a, b) => a.requester.localeCompare(b.requester)),
       PLAY_DATE: (array) => array.sort((a, b) => new Date(a.firstDate).getTime() - new Date(b.firstDate).getTime()),
     }
   }
@@ -22,6 +24,7 @@ const RequestsByUser = ({
         <>
           <Header>
             <HeaderRow>
+              {showUser && <><HeaderCellSort sortKey={'REQUESTER'}>Name</HeaderCellSort></>}
               <HeaderCellSort sortKey={'SONG_NAME'}>Song Name</HeaderCellSort>
               <HeaderCell>Song URI</HeaderCell>
               <HeaderCellSort sortKey={'PLAY_DATE'}>Played</HeaderCellSort>
@@ -30,6 +33,7 @@ const RequestsByUser = ({
           <Body>
             {tableList.map((item) => (
               <Row key={item.id} item={item}>
+                {showUser && <><Cell>{item.requester}</Cell></>}
                 <Cell>{item.song}</Cell>
                 <Cell>{item.uri}</Cell>
                 <Cell>{dateFormat(new Date(item.playedAt), 'yyyy-mm-dd HH:MM')}</Cell>

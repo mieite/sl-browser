@@ -3,6 +3,7 @@ import RequestsByUserTotals from "./RequestsByUserTotals";
 import RequestsByUser from "./RequestsByUser";
 import RequestsBySong from "./RequestsBySong";
 import '../index.css';
+import { requestToDefaultTableRow } from "../utils";
 
 const Results = ({
   data
@@ -16,6 +17,8 @@ const Results = ({
   const [showFilterBySongName, setShowFilterBySongName] = useState(false);
   const songName = useRef(null);
   const [actualSongName, setActualSongName] = useState(null);
+  const [aggregateSongResults, setAggregateSongResults] = useState(false);
+
 
   useEffect(() => {
     crunchData();
@@ -30,41 +33,11 @@ const Results = ({
     }
 
     data.forEach((req) => {
-      const info = req.requests[0];
-      const name = info && info.name || 'anonymous';
+      const parsedReq = requestToDefaultTableRow(req);
+      let name = parsedReq.requester;
       const list = reqsByUser.has(name.toLowerCase()) ? reqsByUser.get(name.toLowerCase()) : [];
-      let song;
-      if(req.song) {
-        song = `${req.song.artist} - ${req.song.title}`;
-      } else {
-        if(req.nonlistSong) {
-          song = req.nonlistSong;
-        } else {
-          song = req.note;
-        }
-      }
 
-      let uri;
-      if(req.note && req.note.toLowerCase().startsWith('http')) {
-        uri = req.note;
-      } else if(req.nonlistSong && req.nonlistSong.toLowerCase().startsWith('http')) {
-        uri = req.nonlistSong;
-      }
-
-      if(uri && uri.includes('youtube') && uri.includes('&')) {
-        uri = uri.substring(0, uri.indexOf('&'));
-      } else if(uri && uri.includes('spotify') && uri.includes('?')) {
-        uri = uri.substring(0, uri.indexOf('?'));
-      }
-      
-      list.push({
-        id: req.id,
-        uri: uri,
-        createdAt: req.createdAt,
-        playedAt: req.playedAt,
-        song: song,
-        requester: name
-      });
+      list.push(parsedReq);
       reqsByUser.set(name.toLowerCase(), list);
     });
 
@@ -102,10 +75,10 @@ const Results = ({
   }
 
   const filterBySongNameTable = () => {
-    if (!data || !crunched || !actualSongName || !showFilterBySongName) {
+    if (!data || !crunched || (!aggregateSongResults && !actualSongName) || !showFilterBySongName) {
       return <></>
     }
-    return (<RequestsBySong data={data} songName={actualSongName}/>)
+    return (<RequestsBySong data={data} songName={actualSongName} aggregate={aggregateSongResults}/>)
 
   }
 
@@ -125,7 +98,10 @@ const Results = ({
           {filterByUserTable()}
         </div>
         <div className={"segment"}>
-          <input type={'text'} placeholder={'Requests by song name'} onChange={(e) => { songName.current = e.target.value}}/>
+          <div>
+            <input type={'text'} placeholder={'Requests by song name'} onChange={(e) => { songName.current = e.target.value}}/>
+            <input type={'checkbox'} onInput={(e) => { setAggregateSongResults(e.target.checked)}}/> aggregate results
+          </div>
           <button onClick={(e) => { setShowFilterBySongName(true); setActualSongName(songName.current); }}>search by song name</button>
           {filterBySongNameTable()}
         </div>
