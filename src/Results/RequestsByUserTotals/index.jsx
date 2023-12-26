@@ -1,27 +1,16 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
 import dateFormat from "dateformat";
 
-class RequestsByUserTotals extends Component {
-  constructor(props) {
-    super(props);
-  }
-  
-  shouldComponentUpdate(nextProps, nextState, nextContext) {
-    return JSON.stringify(nextProps) !== JSON.stringify(this.props);
+const RequestsByUserTotals = ({
+  data
+}) => {
+  console.log("rendering RequestsByUserTotals");
+  if(!data) {
+    return <></>;
   }
 
-  render() {
-    console.log("rendering RequestsByUserTotals");
-    if(!this.props.data) {
-      return <></>;
-    }
-    return <RequestsByUserTotalsTable data={this.props.data}/>;
-  }
-}
-
-const RequestsByUserTotalsTable = (props) => {
   console.log("creating RequestsByUserTotalsTable");
   
   const sortOptions = {
@@ -33,10 +22,10 @@ const RequestsByUserTotalsTable = (props) => {
     }
   }
 
-  const sort = useSort(props.data, {state: {sortKey: 'TOTAL_PLAYED', reverse: true}}, sortOptions);
+  const sort = useSort(data, {state: {sortKey: 'TOTAL_PLAYED', reverse: true}}, sortOptions);
 
   return (
-    <Table data={props.data} sort={sort}>{(tableList) => (
+    <Table data={data} sort={sort}>{(tableList) => (
       <>
         <Header>
           <HeaderRow>

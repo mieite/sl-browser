@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
 import dateFormat from "dateformat";
+import '../../index.css';
 
 const RequestsBySong = ({
   data,
@@ -67,28 +68,31 @@ const RequestsBySong = ({
   }
   
   return (
-    <Table data={crunched} sort={sort}>{(tableList) => (
-      <>
-        <Header>
-          <HeaderRow>
-            <HeaderCellSort sortKey={'SONG_NAME'}>Name</HeaderCellSort>
-            <HeaderCellSort sortKey={'FIRST_DATE'}>First</HeaderCellSort>
-            <HeaderCellSort sortKey={'LAST_DATE'}>Last</HeaderCellSort>
-            <HeaderCellSort sortKey={'TOTAL_PLAYED'}>Total played</HeaderCellSort>
-          </HeaderRow>
-        </Header>
-        <Body>
-          {tableList.map((item) => (
-            <Row key={item.id} item={item}>
-              <Cell>{item.actualSong}</Cell>
-              <Cell>{dateFormat(new Date(item.firstDate), 'yyyy-mm-dd HH:MM')}</Cell>
-              <Cell>{dateFormat(new Date(item.lastDate), 'yyyy-mm-dd HH:MM')}</Cell>
-              <Cell>{item.total}</Cell>
-            </Row>
-          ))}
-        </Body>
-      </>
-    )}</Table>
+    <div className={"paragraph"}>
+      <Table data={crunched} sort={sort}>{(tableList) => (
+        <>
+          <Header>
+            <HeaderRow>
+              <HeaderCellSort sortKey={'SONG_NAME'}>Name</HeaderCellSort>
+              <HeaderCellSort sortKey={'FIRST_DATE'}>First</HeaderCellSort>
+              <HeaderCellSort sortKey={'LAST_DATE'}>Last</HeaderCellSort>
+              <HeaderCellSort sortKey={'TOTAL_PLAYED'}>Total played</HeaderCellSort>
+            </HeaderRow>
+          </Header>
+          <Body>
+            {tableList.map((item) => (
+              <Row key={item.id} item={item}>
+                <Cell>{item.actualSong}</Cell>
+                <Cell>{dateFormat(new Date(item.firstDate), 'yyyy-mm-dd HH:MM')}</Cell>
+                <Cell>{dateFormat(new Date(item.lastDate), 'yyyy-mm-dd HH:MM')}</Cell>
+                <Cell>{item.total}</Cell>
+              </Row>
+            ))}
+          </Body>
+        </>
+      )}
+      </Table>
+    </div>
   );
 }
 

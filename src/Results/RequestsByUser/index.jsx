@@ -2,6 +2,7 @@ import React from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
 import dateFormat from "dateformat";
+import '../../index.css';
 
 const RequestsByUser = ({
   data
@@ -14,27 +15,30 @@ const RequestsByUser = ({
   }
   const sort = useSort(data, { state: { sortKey: 'PLAY_DATE' }}, sortOptions);
 
+  console.log("rendering RequestsByUser");
   return (
-    <Table data={data} sort={sort}>{(tableList) => (
-      <>
-        <Header>
-          <HeaderRow>
-            <HeaderCellSort sortKey={'SONG_NAME'}>Song Name</HeaderCellSort>
-            <HeaderCell>Song URI</HeaderCell>
-            <HeaderCellSort sortKey={'PLAY_DATE'}>Played</HeaderCellSort>
-          </HeaderRow>
-        </Header>
-        <Body>
-          {tableList.map((item) => (
-            <Row key={item.id} item={item}>
-              <Cell>{item.song}</Cell>
-              <Cell>{item.uri}</Cell>
-              <Cell>{dateFormat(new Date(item.playedAt), 'yyyy-mm-dd HH:MM')}</Cell>
-            </Row>
-          ))}
-        </Body>
-      </>
-    )}</Table>
+    <div className={"paragraph"}>
+      <Table data={data} sort={sort}>{(tableList) => (
+        <>
+          <Header>
+            <HeaderRow>
+              <HeaderCellSort sortKey={'SONG_NAME'}>Song Name</HeaderCellSort>
+              <HeaderCell>Song URI</HeaderCell>
+              <HeaderCellSort sortKey={'PLAY_DATE'}>Played</HeaderCellSort>
+            </HeaderRow>
+          </Header>
+          <Body>
+            {tableList.map((item) => (
+              <Row key={item.id} item={item}>
+                <Cell>{item.song}</Cell>
+                <Cell>{item.uri}</Cell>
+                <Cell>{dateFormat(new Date(item.playedAt), 'yyyy-mm-dd HH:MM')}</Cell>
+              </Row>
+            ))}
+          </Body>
+        </>
+      )}</Table>
+    </div>
   )
 };
 

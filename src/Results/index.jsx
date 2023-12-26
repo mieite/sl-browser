@@ -1,21 +1,29 @@
-import React, {Component} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import RequestsByUserTotals from "./RequestsByUserTotals";
 import RequestsByUser from "./RequestsByUser";
 import RequestsBySong from "./RequestsBySong";
+import '../index.css';
 
-class Results extends Component {
-  constructor(props) {
-    super(props);
-  }
+const Results = ({
+  data
+}) => {
 
-  componentDidMount() {
-    this.crunchData();
-  }
+  const [crunched, setCrunched] = useState(null);
+  const [byUserTotalsTableRows, setByUserTotalsTableRows] = useState([]);
+  const requesterName = useRef(null);
+  const [actualRequesterName, setActualRequesterName] = useState(null);
+  const [showFilterByUser, setShowFilterByUser] = useState(false);
+  const [showFilterBySongName, setShowFilterBySongName] = useState(false);
+  const songName = useRef(null);
+  const [actualSongName, setActualSongName] = useState(null);
 
-  crunchData = () => {
+  useEffect(() => {
+    crunchData();
+  }, []);
+
+  const crunchData = () => {
     console.log("crunch");
     const reqsByUser = new Map();
-    const data = this.props.data;
 
     if(!data) {
       return;
@@ -70,71 +78,60 @@ class Results extends Component {
       }
     });
 
-    console.log(data);
-
-    this.setState({crunched: reqsByUser, byUserTotalsTableRows: byUserTotalsTableRows});
+    setCrunched(reqsByUser);
+    setByUserTotalsTableRows(byUserTotalsTableRows);
   }
 
-  requestsByUserTotals() {
-    if(!this.props.data || !this.state.byUserTotalsTableRows) {
+  const requestsByUserTotals = () => {
+    if(!data || !byUserTotalsTableRows) {
       return <>fetching & crunching data</>;
     }
-    return (<RequestsByUserTotals data={{ nodes: this.state.byUserTotalsTableRows }}/>);
+    return (<RequestsByUserTotals data={{ nodes: byUserTotalsTableRows }}/>);
   }
 
-  updateRequesterName = (e) => this.setState({requester: e.target.value});
-
-  updateSongName = (e) => this.setState({songName: e.target.value});
-
-  filterByUser = () => this.setState({showFilterByUser: true});
-
-  filterBySongName = () => this.setState({actualSongName: this.state.songName, showFilterBySongName: true});
-
-  filterByUserTable = () => {
-    if(!this.props.data || !this.state?.crunched || !this.state?.requester || !this.state?.showFilterByUser) {
+  const filterByUserTable = () => {
+    if(!data || !crunched || !requesterName || !showFilterByUser) {
       return <></>;
     }
-    const byUser = this.state.crunched.get(this.state.requester.toLowerCase());
+    const byUser = crunched.get(actualRequesterName.toLowerCase());
     if(!byUser) {
       return <></>;
     }
-    // console.log(byUser);
+    console.log(`getting to do byUser`);
     return (<RequestsByUser data={{nodes: byUser}}/>);
   }
 
-  filterBySongNameTable = () => {
-    if (!this.props.data || !this.state?.crunched || !this.state?.actualSongName || !this.state?.showFilterBySongName) {
+  const filterBySongNameTable = () => {
+    if (!data || !crunched || !actualSongName || !showFilterBySongName) {
       return <></>
     }
-    return (<RequestsBySong data={this.props.data} songName={this.state.actualSongName}/>)
+    return (<RequestsBySong data={data} songName={actualSongName}/>)
 
   }
 
-  render() {
-    if(!this.state?.crunched) {
-      return <>Crunching data...</>
-    }
-    return (
-      <>
-        <div> Total: {this.state.crunched.size} requesters</div>
-        <div><h5>User leaderboard</h5></div>
-        <div>{this.requestsByUserTotals()}</div>
-        <div>&nbsp;</div>
-        <div>
-          <p>
-            <input type={'text'} placeholder={'Requests by user'} onChange={(e) => { this.updateRequesterName(e)}}/>
-            <button onClick={(e) => { this.filterByUser()}}>search</button>
-            {this.filterByUserTable()}
-          </p>
-          <p>
-            <input type={'text'} placeholder={'Requests by song name'} onChange={(e) => { this.updateSongName(e)}}/>
-            <button onClick={(e) => { this.filterBySongName()}}>search by song name</button>
-            {this.filterBySongNameTable()}
-          </p>
+  if(!crunched) {
+    return <>Crunching data...</>
+  }
+  return (
+    <>
+      <div> Total: {crunched.size} requesters</div>
+      <div><h5>User leaderboard</h5></div>
+      <div>{requestsByUserTotals()}</div>
+      <div>&nbsp;</div>
+      <div>
+        <div className={"segment"}>
+          <input type={'text'} placeholder={'Requests by user'} onChange={(e) => { requesterName.current = e.target.value}}/>
+          <button onClick={() => { setShowFilterByUser(true); setActualRequesterName(requesterName.current); }}>search</button>
+          {filterByUserTable()}
         </div>
-      </>
-    );
-  }
+        <div className={"segment"}>
+          <input type={'text'} placeholder={'Requests by song name'} onChange={(e) => { songName.current = e.target.value}}/>
+          <button onClick={(e) => { setShowFilterBySongName(true); setActualSongName(songName.current); }}>search by song name</button>
+          {filterBySongNameTable()}
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Results;

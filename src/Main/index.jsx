@@ -49,7 +49,7 @@ class Main extends Component {
       return <></>;
     }
     return (
-      <>
+      <div>
         <div id={'search'}>
           <input type={'text'} placeholder={'Streamer name'} onChange={(e) => { this.updateUsername(e)}}/>
           <button onClick={(e) => { this.loadUserData(e) }}>Search</button>
@@ -58,7 +58,7 @@ class Main extends Component {
         <div id={'result-main'}>
           {this.state.data && <Results data={this.state.data}/>}
         </div>
-      </>
+      </div>
     )
   }
 }
