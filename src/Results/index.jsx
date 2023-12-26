@@ -1,10 +1,7 @@
 import React, {Component} from 'react';
-import ResultsByUser from './RequestsByUserTotals';
-
-import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
-import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
 import RequestsByUserTotals from "./RequestsByUserTotals";
 import RequestsByUser from "./RequestsByUser";
+import RequestsBySong from "./RequestsBySong";
 
 class Results extends Component {
   constructor(props) {
@@ -73,19 +70,25 @@ class Results extends Component {
       }
     });
 
+    console.log(data);
+
     this.setState({crunched: reqsByUser, byUserTotalsTableRows: byUserTotalsTableRows});
   }
 
   requestsByUserTotals() {
     if(!this.props.data || !this.state.byUserTotalsTableRows) {
-      return <></>;
+      return <>fetching & crunching data</>;
     }
     return (<RequestsByUserTotals data={{ nodes: this.state.byUserTotalsTableRows }}/>);
   }
 
   updateRequesterName = (e) => this.setState({requester: e.target.value});
 
+  updateSongName = (e) => this.setState({songName: e.target.value});
+
   filterByUser = () => this.setState({showFilterByUser: true});
+
+  filterBySongName = () => this.setState({actualSongName: this.state.songName, showFilterBySongName: true});
 
   filterByUserTable = () => {
     if(!this.props.data || !this.state?.crunched || !this.state?.requester || !this.state?.showFilterByUser) {
@@ -95,8 +98,16 @@ class Results extends Component {
     if(!byUser) {
       return <></>;
     }
-    console.log(byUser);
+    // console.log(byUser);
     return (<RequestsByUser data={{nodes: byUser}}/>);
+  }
+
+  filterBySongNameTable = () => {
+    if (!this.props.data || !this.state?.crunched || !this.state?.actualSongName || !this.state?.showFilterBySongName) {
+      return <></>
+    }
+    return (<RequestsBySong data={this.props.data} songName={this.state.actualSongName}/>)
+
   }
 
   render() {
@@ -110,9 +121,16 @@ class Results extends Component {
         <div>{this.requestsByUserTotals()}</div>
         <div>&nbsp;</div>
         <div>
-          <input type={'text'} placeholder={'Requests by user'} onChange={(e) => { this.updateRequesterName(e)}}/>
-          <button onClick={(e) => { this.filterByUser()}}>search</button>
-          {this.filterByUserTable()}
+          <p>
+            <input type={'text'} placeholder={'Requests by user'} onChange={(e) => { this.updateRequesterName(e)}}/>
+            <button onClick={(e) => { this.filterByUser()}}>search</button>
+            {this.filterByUserTable()}
+          </p>
+          <p>
+            <input type={'text'} placeholder={'Requests by song name'} onChange={(e) => { this.updateSongName(e)}}/>
+            <button onClick={(e) => { this.filterBySongName()}}>search by song name</button>
+            {this.filterBySongNameTable()}
+          </p>
         </div>
       </>
     );

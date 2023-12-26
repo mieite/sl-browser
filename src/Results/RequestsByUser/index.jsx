@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
 import dateFormat from "dateformat";
 
-const RequestsByUser = (props) => {
+const RequestsByUser = ({
+  data
+}) => {
   const sortOptions = {
     sortFns: {
       SONG_NAME: (array) => array.sort((a, b) => a.song.localeCompare(b.song)),
       PLAY_DATE: (array) => array.sort((a, b) => new Date(a.firstDate).getTime() - new Date(b.firstDate).getTime()),
     }
   }
-
-  const sort = useSort(props.data, {state: {sortKey: 'PLAY_DATE'}}, sortOptions);
+  const sort = useSort(data, { state: { sortKey: 'PLAY_DATE' }}, sortOptions);
 
   return (
-    <Table data={props.data} sort={sort}>{(tableList) => (
+    <Table data={data} sort={sort}>{(tableList) => (
       <>
         <Header>
           <HeaderRow>
