@@ -36,7 +36,13 @@ export const parseSong = (req) => {
     song = `${req.song.artist} - ${req.song.title}`;
   } else {
     if(req.nonlistSong) {
-      song = req.nonlistSong;
+      if (req.note && req.note.includes('spotify.com')) {
+        song = req.note.split('?')[0];
+      } else if (req.nonlistSong.includes('spotify.com')) {
+        song = req.nonlistSong.split('?')[0];
+      } else {
+        song = req.nonlistSong;
+      }
     } else {
       song = req.note;
     }

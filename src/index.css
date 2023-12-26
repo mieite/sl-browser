@@ -12,6 +12,11 @@ code {
     monospace;
 }
 
+.wrap {
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
 .segment {
   margin-top: 2em;
   margin-bottom: 2em;

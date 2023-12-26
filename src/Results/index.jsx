@@ -25,7 +25,7 @@ const Results = ({
   }, []);
 
   const crunchData = () => {
-    console.log("crunch");
+    console.log(data);
     const reqsByUser = new Map();
 
     if(!data) {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
+import { useTheme } from '@table-library/react-table-library/theme';
+import { getTheme } from '@table-library/react-table-library/baseline';
 import dateFormat from "dateformat";
 import '../../index.css';
 
@@ -8,6 +10,9 @@ const RequestsByUser = ({
   data,
   showUser
 }) => {
+
+  const theme = useTheme(getTheme());
+
   const sortOptions = {
     sortFns: {
       SONG_NAME: (array) => array.sort((a, b) => a.song.localeCompare(b.song)),
@@ -20,7 +25,7 @@ const RequestsByUser = ({
   console.log("rendering RequestsByUser");
   return (
     <div className={"paragraph"}>
-      <Table data={data} sort={sort}>{(tableList) => (
+      <Table data={data} sort={sort} theme={theme}>{(tableList) => (
         <>
           <Header>
             <HeaderRow>
@@ -35,7 +40,7 @@ const RequestsByUser = ({
               <Row key={item.id} item={item}>
                 {showUser && <><Cell>{item.requester}</Cell></>}
                 <Cell>{item.song}</Cell>
-                <Cell>{item.uri}</Cell>
+                <Cell><div className={"wrap"}>{item.uri}</div></Cell>
                 <Cell>{dateFormat(new Date(item.playedAt), 'yyyy-mm-dd HH:MM')}</Cell>
               </Row>
             ))}

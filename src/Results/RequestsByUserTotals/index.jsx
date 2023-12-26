@@ -1,18 +1,21 @@
 import React from 'react';
 import { Body, Cell, Header, HeaderCell, HeaderRow, Row, Table } from "@table-library/react-table-library";
 import { HeaderCellSort, useSort } from '@table-library/react-table-library/sort';
+import { useTheme } from "@table-library/react-table-library/theme";
+import { getTheme } from "@table-library/react-table-library/baseline";
 import dateFormat from "dateformat";
 
 const RequestsByUserTotals = ({
   data
 }) => {
+  const theme = useTheme(getTheme());
   console.log("rendering RequestsByUserTotals");
   if(!data) {
     return <></>;
   }
 
   console.log("creating RequestsByUserTotalsTable");
-  
+
   const sortOptions = {
     sortFns: {
       REQUESTER: (array) => array.sort((a, b) => a.requester.localeCompare(b.requester)),
@@ -25,7 +28,7 @@ const RequestsByUserTotals = ({
   const sort = useSort(data, {state: {sortKey: 'TOTAL_PLAYED', reverse: true}}, sortOptions);
 
   return (
-    <Table data={data} sort={sort}>{(tableList) => (
+    <Table data={data} sort={sort} theme={theme}>{(tableList) => (
       <>
         <Header>
           <HeaderRow>
